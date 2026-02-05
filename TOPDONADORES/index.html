@@ -1,105 +1,40 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Top Donadores</title>
-
-<style>
-body {
-  margin: 0;
-  background: transparent;
-  font-family: Arial, Helvetica, sans-serif;
-  color: white;
-}
-
-#container {
-  width: 800px;
-  padding: 20px;
-}
-
-.card {
-  display: flex;
-  align-items: center;
-  margin-bottom: 25px;
-}
-
-.pos {
-  font-size: 48px;
-  width: 60px;
-  text-align: center;
-}
-
-.avatar {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  overflow: hidden;
-  margin-right: 20px;
-  position: relative;
-}
-
-.avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.crown {
-  position: absolute;
-  top: -25px;
-  left: -15px;
-  width: 120px;
-}
-
-.info {
-  flex-grow: 1;
-}
-
-.name {
-  font-size: 34px;
-}
-
-.amount {
-  font-size: 36px;
-  color: #5dade2;
-}
-</style>
-</head>
-
-<body>
-<div id="container"></div>
-
 <script>
-fetch("data.json")
-  .then(res => res.json())
-  .then(data => {
-    data.sort((a, b) => b.monto - a.monto);
+let lastData = "";
 
-    const container = document.getElementById("container");
-    container.innerHTML = "";
+function loadData() {
+  fetch("data.json?t=" + Date.now())
+    .then(res => res.text())
+    .then(text => {
+      if (text === lastData) return;
+      lastData = text;
 
-    data.forEach((user, index) => {
-      const card = document.createElement("div");
-      card.className = "card";
+      const data = JSON.parse(text);
+      data.sort((a, b) => b.monto - a.monto);
 
-      card.innerHTML = `
-        <div class="pos">${index + 1}.</div>
-        <div class="avatar">
-          ${index === 0 ? '<img class="crown" src="https://i.imgur.com/3ZQ3ZQZ.png">' : ''}
-          <img src="${user.foto}">
-        </div>
-        <div class="info">
-          <div class="name">${user.nombre}</div>
-          <div class="amount">${user.monto.toLocaleString("es-CO")}</div>
-        </div>
-      `;
+      const container = document.getElementById("container");
+      container.innerHTML = "";
 
-      container.appendChild(card);
+      data.forEach((user, index) => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        card.innerHTML = `
+          <div class="pos">${index + 1}.</div>
+          <div class="avatar">
+            <img src="${user.foto}">
+          </div>
+          <div class="info">
+            <div class="name">${user.nombre}</div>
+            <div class="amount">${user.monto.toLocaleString("es-CO")}</div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
     });
-  });
+}
 
-// Auto refresco cada 5 segundos
-setInterval(() => location.reload(), 5000);
+loadData();
+setInterval(loadData, 3000);
 </script>
-</body>
-</html>
+
